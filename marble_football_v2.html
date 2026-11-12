@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marble Football — Match Arena</title>
+<style>
+:root{--bg:#071326;--panel:#10213c;--line:#29476b;--muted:#a8bad3;--white:#f5f8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#244b78 0,#0a1a32 48%,#050d1b 100%);color:var(--white);font-family:Inter,system-ui,Arial,sans-serif}
+header{height:66px;padding:0 clamp(14px,4vw,42px);display:flex;align-items:center;justify-content:space-between;background:#071224d9;border-bottom:1px solid #29466b}
+.logo{font-weight:1000;letter-spacing:.7px;font-size:21px}.logo span{color:#69a9ff}.sub{font-size:11px;letter-spacing:2px;color:#9eb4d3;font-weight:800}
+main{max-width:1180px;margin:auto;padding:22px 16px 40px}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:17px 22px;background:linear-gradient(110deg,#122c50,#0c1c35 50%,#122c50);border:1px solid #34577f;border-radius:16px 16px 0 0;box-shadow:0 14px 34px #0004}
+.team{display:flex;align-items:center;gap:12px;min-width:0}.team.right{justify-content:flex-end;text-align:right}.flag{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:23px;background:#203b60;border:2px solid #7193bc;box-shadow:0 4px 12px #0005}.teamname{font-weight:900;font-size:clamp(14px,2.5vw,20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.team small{display:block;color:#a9bedb;font-size:10px;letter-spacing:1.4px;font-weight:800;margin-top:3px}.score{font-size:clamp(30px,5vw,44px);font-weight:1000;letter-spacing:4px;white-space:nowrap}.clock{text-align:center;color:#a9bedb;font-size:11px;font-weight:900;letter-spacing:1.6px}.clock strong{display:block;color:white;font-size:20px;letter-spacing:1px;margin-top:3px}
+.arena{border:1px solid #34577f;border-top:0;background:#0b1b31;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 20px 50px #0005}
+canvas{display:block;width:100%;height:auto}
+.controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0}
+.control{background:#10213c;border:1px solid #2c4b70;border-radius:12px;padding:10px 12px}.control label{display:block;color:#9eb4d3;font-size:10px;letter-spacing:1px;font-weight:900;margin-bottom:7px}.control select{width:100%;background:#0a1930;color:#f5f8ff;border:1px solid #34577f;border-radius:8px;padding:9px;font-weight:800}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}button{border:1px solid #3a5c82;background:#183456;color:white;padding:12px 17px;border-radius:10px;font-weight:900;cursor:pointer}button:hover{filter:brightness(1.15)}button.primary{background:linear-gradient(#35d76b,#159b46);border-color:#4ce77d;color:#05200f}.message{margin-left:auto;align-self:center;color:#b7c9e1;font-size:13px;font-weight:800}
+.bottom{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.panel{background:linear-gradient(145deg,#122846,#0b1a30);border:1px solid #29496f;border-radius:13px;padding:15px}.panel h3{font-size:13px;letter-spacing:1px;margin:0 0 12px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#09182d;border-radius:9px;padding:10px}.stat span{display:block;color:#8fa8c9;font-size:10px;font-weight:800}.stat b{display:block;font-size:20px;margin-top:4px}.feed{display:flex;gap:8px;flex-wrap:wrap;max-height:92px;overflow:auto}.event{font-size:12px;background:#0a1a30;border:1px solid #28466b;border-radius:8px;padding:7px 9px;color:#dce8f8}.hint{color:#8fa8c9;font-size:11px;line-height:1.5;margin-top:12px}
+@media(max-width:720px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom{grid-template-columns:1fr}.sub{display:none}.scoreboard{padding:13px 10px;gap:6px}.flag{width:34px;height:34px;font-size:18px}.team{gap:7px}.team small{font-size:8px}.score{letter-spacing:1px}.clock strong{font-size:17px}}
+</style>
+</head>
+<body>
+<header><div class="logo">MARBLE <span>FOOTBALL</span></div><div class="sub">BEAT THE KEEPER · MATCH ARENA</div></header>
+<main>
+ <section class="scoreboard">
+  <div class="team"><div class="flag" id="flagA">🇧🇷</div><div><div class="teamname" id="nameA">BRAZIL</div><small>TEAM A</small></div></div>
+  <div><div class="score"><span id="scoreA">0</span> : <span id="scoreB">0</span></div><div class="clock">MATCH TIME<strong id="clock">00:00</strong></div></div>
+  <div class="team right"><div><div class="teamname" id="nameB">FRANCE</div><small>TEAM B</small></div><div class="flag" id="flagB">🇫🇷</div></div>
+ </section>
+ <section class="arena"><canvas id="pitch" width="1000" height="590"></canvas></section>
+ <section class="controls">
+  <div class="control"><label>TIME</label><select id="duration"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select></div>
+  <div class="control"><label>BALLS PER TEAM</label><select id="quantity"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option><option>50</option></select></div>
+  <div class="control"><label>TEAM A</label><select id="teamA"><option value="🇧🇷|BRAZIL">🇧🇷 Brazil</option><option value="🇦🇷|ARGENTINA">🇦🇷 Argentina</option><option value="🇵🇹|PORTUGAL">🇵🇹 Portugal</option><option value="🏴|ENGLAND">🏴 England</option><option value="🇩🇪|GERMANY">🇩🇪 Germany</option><option value="🇪🇸|SPAIN">🇪🇸 Spain</option></select></div>
+  <div class="control"><label>TEAM B</label><select id="teamB"><option value="🇫🇷|FRANCE">🇫🇷 France</option><option value="🇧🇷|BRAZIL">🇧🇷 Brazil</option><option value="🇦🇷|ARGENTINA">🇦🇷 Argentina</option><option value="🇵🇹|PORTUGAL">🇵🇹 Portugal</option><option value="🇩🇪|GERMANY">🇩🇪 Germany</option><option value="🇪🇸|SPAIN">🇪🇸 Spain</option></select></div>
+  <div class="control"><label>GOALKEEPER</label><select id="level"><option value=".53">Easy</option><option value=".72" selected>Normal</option><option value=".9">Hard</option></select></div>
+ </section>
+ <div class="actions"><button class="primary" id="start">▶ START MATCH</button><button id="pause">Ⅱ PAUSE</button><button id="reset">↻ RESET</button><div class="message" id="message">Ready — press Start Match</div></div>
+ <section class="bottom">
+  <div class="panel"><h3>📊 MATCH STATISTICS</h3><div class="stats"><div class="stat"><span>SHOTS</span><b id="shots">0</b></div><div class="stat"><span>GOALS</span><b id="goals">0</b></div><div class="stat"><span>SAVES</span><b id="saves">0</b></div><div class="stat"><span>BALLS LEFT</span><b id="left">20</b></div></div><div class="hint">As bolinhas alternam entre as duas equipes, entram em direção ao gol e retornam para a próxima rodada. O goleiro acompanha cada chute e mergulha para tentar defender.</div></div>
+  <div class="panel"><h3>⚡ MATCH EVENTS</h3><div class="feed" id="events"><span class="event">A partida ainda não começou.</span></div></div>
+ </section>
+</main>
+<script>
+(()=>{
+const canvas=document.getElementById('pitch'),c=canvas.getContext('2d'),$=id=>document.getElementById(id);
+const W=1000,H=590,goal={x:230,y:58,w:540,h:112};let balls=[],keeper={x:500,y:146,tx:500,dive:0,dir:1},raf=0,last=0,elapsed=0,remaining=0,total=10,turn=0,score=[0,0],shots=0,saves=0,goals=0,playing=false,paused=false,ended=false,shotWait=0,matchDuration=120,events=[];
+const teamColors=['#35a4ff','#ff4c55'];
+function teamInfo(n){return $('team'+n).value.split('|')}
+function setTeams(){let a=teamInfo('A'),b=teamInfo('B');$('flagA').textContent=a[0];$('nameA').textContent=a[1];$('flagB').textContent=b[0];$('nameB').textContent=b[1]}
+function stats(){$('scoreA').textContent=score[0];$('scoreB').textContent=score[1];$('shots').textContent=shots;$('goals').textContent=goals;$('saves').textContent=saves;$('left').textContent=remaining}
+function event(t){let e=document.createElement('span');e.className='event';e.textContent=t;$('events').prepend(e);while($('events').children.length>7)$('events').lastChild.remove()}
+function reset(){cancelAnimationFrame(raf);raf=0;balls=[];keeper={x:500,y:146,tx:500,dive:0,dir:1};elapsed=0;remaining=+$('quantity').value*2;total=remaining;turn=0;score=[0,0];shots=goals=saves=0;playing=paused=ended=false;shotWait=.4;events=[];$('events').innerHTML='<span class="event">A partida ainda não começou.</span>';$('clock').textContent='00:00';$('message').textContent='Ready — press Start Match';$('pause').textContent='Ⅱ PAUSE';setTeams();stats();draw()}
+function launch(){let side=turn%2;turn++;let startX=side===0?345+Math.random()*310:345+Math.random()*310;let targetX=285+Math.random()*430;let targetY=116+Math.random()*26;let dx=targetX-startX,dy=targetY-510,len=Math.hypot(dx,dy),speed=6+Math.random()*1.7;let b={x:startX,y:518,vx:dx/len*speed,vy:dy/len*speed,r:14,team:side,color:teamColors[side],trail:[],state:'fly',targetX};balls.push(b);remaining--;shots++;keeper.tx=targetX;stats();event((side===0?teamInfo('A')[1]:teamInfo('B')[1])+' shot')}
+function finishShot(b){let accuracy=+$('level').value;let keeperReach=Math.abs(b.x-keeper.x)<(accuracy===.9?65:accuracy===.72?48:34);let randomSave=Math.random()<accuracy*.72;if(keeperReach&&randomSave){b.state='saved';saves++;keeper.dive=1;keeper.dir=Math.sign(b.x-keeper.x)||1;event('🧤 SAVE! '+(b.team===0?teamInfo('A')[1]:teamInfo('B')[1]))}else{b.state='goal';score[b.team]++;goals++;event('⚽ GOAL! '+(b.team===0?teamInfo('A')[1]:teamInfo('B')[1]))}stats()}
+function update(dt){let f=Math.min(dt/16.67,2.5);if(playing&&!paused&&!ended){elapsed+=dt/1000;shotWait-=dt/1000;if(remaining>0&&shotWait<=0&&!balls.some(b=>b.state==='fly')){launch();shotWait=.85}
+ for(let b of balls){if(b.state!=='fly')continue;b.trail.push({x:b.x,y:b.y});if(b.trail.length>11)b.trail.shift();b.x+=b.vx*f;b.y+=b.vy*f;if(b.y<=goal.y+goal.h-12)finishShot(b)}
+ keeper.x+=(keeper.tx-keeper.x)*Math.min(.18*f,1);keeper.dive*=.93;
+ balls=balls.filter(b=>b.state==='fly'||(b.y<goal.y+goal.h+15));
+ let sec=Math.min(matchDuration,Math.floor(elapsed));$('clock').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+ if(sec>=matchDuration||(remaining===0&&!balls.some(b=>b.state==='fly'))){ended=true;playing=false;$('message').textContent='FULL TIME · '+score[0]+' - '+score[1];event('🏁 FULL TIME')}
+}}
+function draw(){
+ c.clearRect(0,0,W,H);let bg=c.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1b6839');bg.addColorStop(1,'#0e4729');c.fillStyle=bg;c.fillRect(0,0,W,H);
+ // pitch stripes
+ for(let i=0;i<10;i++){c.fillStyle=i%2?'#ffffff08':'#001b0b0b';c.fillRect(i*100,0,100,H)}
+ c.strokeStyle='#d9f4dfaa';c.lineWidth=3;c.strokeRect(35,20,930,550);c.beginPath();c.moveTo(35,295);c.lineTo(965,295);c.stroke();c.beginPath();c.arc(500,295,76,0,Math.PI*2);c.stroke();
+ // goal and net
+ c.fillStyle='#101b2a';c.fillRect(goal.x,goal.y,goal.w,goal.h);c.strokeStyle='#f4f7fa';c.lineWidth=9;c.strokeRect(goal.x,goal.y,goal.w,goal.h);c.strokeStyle='#ffffff45';c.lineWidth=2;for(let x=goal.x+20;x<goal.x+goal.w;x+=25){c.beginPath();c.moveTo(x,goal.y+4);c.lineTo(x,goal.y+goal.h-3);c.stroke()}for(let y=goal.y+18;y<goal.y+goal.h;y+=20){c.beginPath();c.moveTo(goal.x+4,y);c.lineTo(goal.x+goal.w-4,y);c.stroke()}
+ // keeper animated body
+ c.save();c.translate(keeper.x,keeper.y);c.rotate(keeper.dive*.42*keeper.dir);c.fillStyle='#06111d';c.beginPath();c.ellipse(0,14,48,19,0,0,Math.PI*2);c.fill();c.fillStyle='#f3b47a';c.beginPath();c.arc(0,-5,17,0,Math.PI*2);c.fill();c.fillStyle='#ffd447';c.fillRect(-31,-1,62,27);c.fillStyle='#f6f7ff';c.fillRect(-48,-2,17,20);c.fillRect(31,-2,17,20);c.fillStyle='#16233b';c.fillRect(-10,-10,4,3);c.fillRect(6,-10,4,3);c.restore();
+ // balls trails and marble shine
+ for(let b of balls){for(let i=0;i<b.trail.length;i++){let p=b.trail[i];c.globalAlpha=(i+1)/b.trail.length*.25;c.fillStyle=b.color;c.beginPath();c.arc(p.x,p.y,b.r*(i+1)/b.trail.length,0,Math.PI*2);c.fill()}c.globalAlpha=1;c.fillStyle='#0006';c.beginPath();c.ellipse(b.x+5,b.y+7,b.r*1.1,b.r*.65,0,0,Math.PI*2);c.fill();let g=c.createRadialGradient(b.x-5,b.y-6,1,b.x,b.y,b.r);g.addColorStop(0,'#fff');g.addColorStop(.18,b.color);g.addColorStop(1,b.color);c.fillStyle=g;c.beginPath();c.arc(b.x,b.y,b.r,0,Math.PI*2);c.fill();c.strokeStyle='#ffffffcc';c.lineWidth=2;c.stroke();c.fillStyle='#ffffffbb';c.beginPath();c.arc(b.x-5,b.y-6,3.5,0,Math.PI*2);c.fill()}
+ c.fillStyle='#ffffffbb';c.font='900 15px Arial';c.textAlign='center';c.fillText('GOALKEEPER',500,goal.y+goal.h+26);
+ // team legend
+ c.fillStyle=teamColors[0];c.beginPath();c.arc(70,535,9,0,7);c.fill();c.fillStyle='white';c.font='bold 15px Arial';c.textAlign='left';c.fillText(teamInfo('A')[1],88,540);c.fillStyle=teamColors[1];c.beginPath();c.arc(820,535,9,0,7);c.fill();c.fillStyle='white';c.textAlign='left';c.fillText(teamInfo('B')[1],838,540);
+}
+function frame(t){let dt=t-(last||t);last=t;update(dt);draw();if(playing&&!paused)raf=requestAnimationFrame(frame);else raf=0}
+$('start').onclick=()=>{if(ended||remaining===0)reset();matchDuration=+$('duration').value;playing=true;paused=false;$('message').textContent='MATCH IN PROGRESS';$('pause').textContent='Ⅱ PAUSE';last=0;if(!raf)raf=requestAnimationFrame(frame)};
+$('pause').onclick=()=>{if(!playing&&!paused)return;if(paused){paused=false;playing=true;$('message').textContent='MATCH IN PROGRESS';$('pause').textContent='Ⅱ PAUSE';last=0;raf=requestAnimationFrame(frame)}else{paused=true;playing=false;$('message').textContent='PAUSED';$('pause').textContent='▶ RESUME'}};
+$('reset').onclick=reset;['teamA','teamB','quantity'].forEach(id=>$(id).onchange=()=>{if(!playing)reset()});
+$('duration').onchange=()=>{if(!playing)matchDuration=+$('duration').value};
+reset();
+})();
+</script>
+</body></html>
