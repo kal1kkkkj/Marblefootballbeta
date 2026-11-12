@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marble Football — Beat the Keeper</title>
+<style>
+:root{--navy:#07152d;--panel:#10264a;--blue:#1768e8;--green:#24c45a;--ink:#f4f7ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#193e70,#07152d 70%);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px clamp(14px,4vw,42px);background:#071226;border-bottom:2px solid #24518b}
+.brand{font-size:clamp(20px,3vw,30px);font-weight:900;letter-spacing:.5px}.brand span{color:#64a2ff}
+header small{color:#a9bbd9;font-weight:700}
+main{max-width:1200px;margin:auto;padding:22px 16px 40px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+button,select{border:1px solid #31588d;border-radius:10px;padding:12px 16px;background:#102b54;color:white;font-weight:800;font-size:14px}
+button{cursor:pointer}button.primary{background:linear-gradient(#35d45f,#159b3b);border-color:#51e77a;color:#05210e}button:hover{filter:brightness(1.12)}
+.status{margin-left:auto;color:#bcd0ee;font-weight:700;font-size:14px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px}
+.game{background:#0b1b36;border:2px solid #31598d;border-radius:16px;overflow:hidden;box-shadow:0 18px 45px #0006}
+.scorebar{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:#0d1b34;font-size:clamp(16px,2vw,22px);font-weight:900}
+.scorebar .score{font-size:clamp(24px,4vw,36px);letter-spacing:2px}
+canvas{display:block;width:100%;height:auto;background:#287d35}
+.side{display:flex;flex-direction:column;gap:14px}.panel{background:linear-gradient(145deg,#132d55,#0a1a34);border:1px solid #31588d;border-radius:14px;padding:16px}
+.panel h3{margin:0 0 12px;font-size:17px}.stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #ffffff18;color:#c5d5ee}.stat b{color:white}
+.log{max-height:230px;overflow:auto;font-size:13px;color:#c6d6ef}.log div{padding:7px 0;border-bottom:1px solid #ffffff14}
+.progress{height:9px;background:#263d5d;border-radius:9px;overflow:hidden;margin-top:10px}.progress i{display:block;height:100%;width:0;background:#36d467;transition:width .2s}
+.instructions{color:#aebfda;font-size:13px;line-height:1.5;margin-top:14px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.status{width:100%;margin:0}.scorebar{gap:8px}.side .panel:last-child{grid-column:1/-1}}
+@media(max-width:480px){.side{grid-template-columns:1fr}.side .panel:last-child{grid-column:auto}.scorebar{padding:10px;font-size:14px}}
+</style>
+</head>
+<body>
+<header><div class="brand">⚽ MARBLE <span>FOOTBALL</span></div><small>BEAT THE KEEPER · 2D SIMULATOR</small></header>
+<main>
+ <div class="toolbar">
+  <select id="count" aria-label="Quantidade de bolas"><option value="8">8 bolas</option><option value="12" selected>12 bolas</option><option value="20">20 bolas</option><option value="30">30 bolas</option></select>
+  <select id="difficulty" aria-label="Dificuldade do goleiro"><option value="easy">Goleiro fácil</option><option value="normal" selected>Goleiro normal</option><option value="hard">Goleiro difícil</option></select>
+  <button class="primary" id="start">▶ Iniciar disputa</button>
+  <button id="pause">Ⅱ Pausar</button>
+  <button id="reset">↻ Reiniciar</button>
+  <div class="status" id="status">Pronto para começar</div>
+ </div>
+ <div class="layout">
+  <section class="game">
+   <div class="scorebar"><span>🔵 ATACANTES</span><span class="score"><b id="goals">0</b> — <b id="saves">0</b></span><span>🧤 DEFESAS</span></div>
+   <canvas id="field" width="900" height="560"></canvas>
+  </section>
+  <aside class="side">
+   <section class="panel"><h3>🏆 Estatísticas</h3><div class="stat"><span>Chutes</span><b id="shots">0</b></div><div class="stat"><span>Gols</span><b id="goalPct">0</b></div><div class="stat"><span>Defesas</span><b id="savePct">0</b></div><div class="stat"><span>Restantes</span><b id="remaining">12</b></div><div class="progress"><i id="progress"></i></div></section>
+   <section class="panel"><h3>📋 Últimas tentativas</h3><div class="log" id="log">As tentativas aparecerão aqui.</div></section>
+   <section class="panel"><h3>Como funciona</h3><div class="instructions">As bolinhas são lançadas uma por vez em direção ao gol. O goleiro acompanha a trajetória e tenta mergulhar para defender. Cada chute tem uma direção e velocidade próprias.</div></section>
+  </aside>
+ </div>
+</main>
+<script>
+(()=>{
+const c=document.getElementById('field'),ctx=c.getContext('2d');
+const $=id=>document.getElementById(id);
+const W=c.width,H=c.height,goal={x:170,y:85,w:560,h:390};
+const colors=['#f6d32d','#e94b4b','#48a5ff','#f3f3f3','#27c46a','#c77dff','#ff9f43','#35d6c4'];
+let balls=[],keeper={x:450,y:135,targetX:450,dive:0,diveDir:0},running=false,paused=false,raf=0;
+let total=12,shots=0,goals=0,saves=0,spawned=0,lastSpawn=0,lastTime=0,finished=false;
+function reset(){cancelAnimationFrame(raf);balls=[];shots=goals=saves=spawned=0;total=+$('count').value;running=false;paused=false;finished=false;keeper={x:450,y:135,targetX:450,dive:0,diveDir:0};$('status').textContent='Pronto para começar';$('log').textContent='As tentativas aparecerão aqui.';updateStats();draw();$('pause').textContent='Ⅱ Pausar'}
+function updateStats(){$('goals').textContent=goals;$('saves').textContent=saves;$('shots').textContent=shots;$('goalPct').textContent=goals;$('savePct').textContent=saves;$('remaining').textContent=Math.max(0,total-spawned);$('progress').style.width=(total?((goals+saves)/total*100):0)+'%'}
+function log(msg){let d=document.createElement('div');d.textContent=msg;let l=$('log');if(l.textContent.includes('As tentativas'))l.textContent='';l.prepend(d);while(l.children.length>8)l.lastChild.remove()}
+function launch(){let lane=150+Math.random()*600;let targetX=260+Math.random()*380;let targetY=102+Math.random()*70;let speed=5.2+Math.random()*2.2;let dx=targetX-lane,dy=targetY-485;let len=Math.hypot(dx,dy);let color=colors[spawned%colors.length];balls.push({x:lane,y:500,vx:dx/len*speed,vy:dy/len*speed,r:13,color,trail:[],state:'flying',targetX,targetY,spin:Math.random()*6.28});shots++;spawned++;updateStats()}
+function update(dt){let step=Math.min(dt/16.67,2.2);
+ if(running&&!paused&&!finished){if(spawned<total&&performance.now()-lastSpawn>700){launch();lastSpawn=performance.now()}
+ for(let b of balls){if(b.state!=='flying')continue;b.trail.push({x:b.x,y:b.y});if(b.trail.length>9)b.trail.shift();b.x+=b.vx*step;b.y+=b.vy*step;b.spin+=.08*step;
+  if(b.y<goal.y+35){let keeperReach=Math.abs(b.x-keeper.x)<53;let chance=$('difficulty').value==='easy'?.48:$('difficulty').value==='hard'?.94:.76;
+   if(keeperReach&&Math.random()<chance){b.state='saved';saves++;keeper.dive=Math.min(1,Math.abs(b.x-keeper.x)/65+.65);keeper.diveDir=Math.sign(b.x-keeper.x)||1;log('🧤 Defesa! Uma bola foi bloqueada.')}
+   else{b.state='goal';goals++;log('⚽ GOL! A bola passou pelo goleiro.')}
+   updateStats();
+  }
+ }
+ let active=balls.some(b=>b.state==='flying');if(spawned>=total&&!active){finished=true;running=false;$('status').textContent='Disputa finalizada!';log('🏁 Fim da disputa: '+goals+' gols e '+saves+' defesas.')}
+ }
+ keeper.x+=(keeper.targetX-keeper.x)*.12*step;keeper.dive*=.94;
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ // stadium background and pitch
+ let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#276c35');g.addColorStop(1,'#125329');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ for(let i=0;i<10;i++){ctx.fillStyle=i%2?'#ffffff08':'#00000008';ctx.fillRect(i*90,0,90,H)}
+ // pitch markings
+ ctx.strokeStyle='#eaffdf';ctx.lineWidth=5;ctx.strokeRect(28,28,W-56,H-56);ctx.beginPath();ctx.moveTo(28,280);ctx.lineTo(W-28,280);ctx.stroke();ctx.beginPath();ctx.arc(450,280,75,0,Math.PI*2);ctx.stroke();
+ // goal mouth at top
+ ctx.fillStyle='#101a29';ctx.fillRect(goal.x,25,goal.w,95);ctx.strokeStyle='#f7f7f7';ctx.lineWidth=8;ctx.strokeRect(goal.x,25,goal.w,95);
+ ctx.strokeStyle='#ffffff55';ctx.lineWidth=2;for(let x=goal.x+18;x<goal.x+goal.w;x+=28){ctx.beginPath();ctx.moveTo(x,28);ctx.lineTo(x,116);ctx.stroke()}for(let y=43;y<120;y+=22){ctx.beginPath();ctx.moveTo(goal.x+3,y);ctx.lineTo(goal.x+goal.w-3,y);ctx.stroke()}
+ // keeper
+ ctx.save();ctx.translate(keeper.x,keeper.y);ctx.rotate(keeper.dive*.35*keeper.diveDir);ctx.fillStyle='#111827';ctx.beginPath();ctx.ellipse(0,7,40,23,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f4a340';ctx.beginPath();ctx.arc(0,-7,19,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd166';ctx.fillRect(-34,-12,68,22);ctx.fillStyle='#fff';ctx.fillRect(-43,-12,13,18);ctx.fillRect(30,-12,13,18);ctx.fillStyle='#17233b';ctx.fillRect(-12,-15,5,4);ctx.fillRect(7,-15,5,4);ctx.restore();
+ // shot line / balls
+ for(let b of balls){for(let i=0;i<b.trail.length;i++){let p=b.trail[i];ctx.globalAlpha=(i+1)/b.trail.length*.28;ctx.fillStyle=b.color;ctx.beginPath();ctx.arc(p.x,p.y,b.r*(i+1)/b.trail.length,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;if(b.state==='flying'||b.state==='saved'||b.state==='goal'){ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(b.x+4,b.y+7,b.r*1.1,b.r*.65,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=b.color;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#ffffffaa';ctx.beginPath();ctx.arc(b.x-4,b.y-5,4,0,Math.PI*2);ctx.fill()}}
+ // small instruction
+ ctx.fillStyle='#ffffffcc';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.fillText('GOAL',450,18);
+}
+function frame(t){let dt=t-(lastTime||t);lastTime=t;update(dt);draw();if(running&&!paused)raf=requestAnimationFrame(frame)}
+$('start').onclick=()=>{if(finished||spawned>=total)reset();total=+$('count').value;running=true;paused=false;$('status').textContent='Disputa em andamento';$('pause').textContent='Ⅱ Pausar';if(!raf){lastSpawn=performance.now()-800;lastTime=0;raf=requestAnimationFrame(frame)}};
+$('pause').onclick=()=>{if(!running&&!paused)return;paused=!paused;if(paused){running=false;$('status').textContent='Disputa pausada';$('pause').textContent='▶ Continuar'}else{running=true;$('status').textContent='Disputa em andamento';$('pause').textContent='Ⅱ Pausar';lastTime=0;raf=requestAnimationFrame(frame)}};
+$('reset').onclick=reset;$('count').onchange=reset;$('difficulty').onchange=()=>{if(!running)draw()};
+reset();
+})();
+</script>
+</body>
+</html>
