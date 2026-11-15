@@ -41,7 +41,7 @@ button.go{background:linear-gradient(180deg,#3ee27c,#14a14a);border-color:#7dffa
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .msg{margin-left:auto;display:flex;align-items:center;gap:8px;color:#cfe0f7;font-size:14px}
 .msg::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--grass);box-shadow:0 0 10px var(--grass)}
-.set{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.set{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .f label{display:block;color:var(--mute);font-size:12px;margin:0 0 6px 4px}
 select{width:100%;appearance:none;font:600 14px var(--body);color:var(--text);padding:12px 34px 12px 14px;border-radius:14px;border:1px solid var(--line);background:#0b1a31 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238fa6c8' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center}
 .low{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
@@ -70,14 +70,9 @@ select{width:100%;appearance:none;font:600 14px var(--body);color:var(--text);pa
 .sq:first-child .br u{background:var(--a)}.sq:last-child .br u{background:var(--b)}.br b{color:var(--text);text-align:right}
 .ev.miss i{background:#c9d6ea}.ev.post i{background:#ffd98a}
 .flag{font:24px var(--disp);letter-spacing:1px;color:#fff}select:disabled{opacity:.55}canvas{background:#0b3f21}
-.low2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.panel h4{margin:14px 0 8px;font:600 13px var(--body);color:var(--mute)}.panel h4:first-of-type{margin-top:0}
-.tr{display:grid;grid-template-columns:24px 1fr 34px;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:#060f1f;margin-bottom:6px;font-size:13px}
-.tr u,.gr u{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}.tr small{color:var(--mute)}.tr b{text-align:right;font:400 22px var(--disp)}
-.gr{display:grid;grid-template-columns:50px 12px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px;font-size:13px}.gr u{margin:0}.gr time{color:var(--mute)}.gr select{padding:9px 28px 9px 10px;font-size:13px}
 input{width:100%;font:600 12px var(--body);color:var(--text);padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1a31}
 button.sm{margin-top:12px;padding:9px 14px;font-size:13px}
-@media(max-width:760px){.low2{grid-template-columns:1fr}.squads{grid-template-columns:1fr}}
+@media(max-width:760px){.squads{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.score b.pop{animation:none}}
 </style>
 </head>
@@ -95,16 +90,16 @@ button.sm{margin-top:12px;padding:9px 14px;font-size:13px}
  <section class="arena"><canvas id="pitch" width="1000" height="590" aria-label="Campo de jogo"></canvas></section>
  <div class="bar"><button class="go" id="start">▶ Iniciar partida</button><button id="pause">❚❚ Pausar</button><button id="reset">↻ Reiniciar</button><button id="mute" aria-label="Ligar ou desligar o som">🔊</button><div class="msg" id="message" aria-live="polite">Pronto para o apito inicial</div></div>
  <section class="set">
-  <div class="f"><label for="duration">Tempo máximo</label><select id="duration"><option value="60">1 minuto</option><option value="120" selected>2 minutos</option><option value="180">3 minutos</option><option value="300">5 minutos</option></select></div>
+  <div class="f"><label for="duration">Ritmo do jogo</label><select id="duration"><option value="60">1 minuto</option><option value="120" selected>2 minutos</option><option value="180">3 minutos</option><option value="300">5 minutos</option></select></div>
   <div class="f"><label for="quantity">Bolas por time</label><select id="quantity"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option><option>50</option></select></div>
   <div class="f"><label for="level">Goleiro</label><select id="level"><option value=".3">Fácil</option><option value=".45" selected>Normal</option><option value=".6">Difícil</option></select></div>
+  <div class="f"><label for="tie">Se empatar</label><select id="tie"><option value="0" selected>Terminar empatado</option><option value="1">Pênaltis alternados</option></select></div>
  </section>
  <section class="squads"><div class="sq"><div class="sqh"><div class="crest" id="crA"></div><div class="sel"><select id="teamA" aria-label="time azul"></select><input id="plA" aria-label="Jogadores do time azul (separe por vírgula)" placeholder="Jogadores, separados por vírgula"></div><div class="ger"><b id="gerA">0</b><span>GER</span></div></div><div class="bars" id="barsA"></div></div><div class="sq"><div class="sqh"><div class="crest" id="crB"></div><div class="sel"><select id="teamB" aria-label="time vermelho"></select><input id="plB" aria-label="Jogadores do time vermelho (separe por vírgula)" placeholder="Jogadores, separados por vírgula"></div><div class="ger"><b id="gerB">0</b><span>GER</span></div></div><div class="bars" id="barsB"></div></div></section>
  <section class="low">
-  <div class="panel"><h3>Estatísticas</h3><div class="stats"><div class="st"><span>Chutes</span><b id="shots">0</b></div><div class="st"><span>Gols</span><b id="goals">0</b></div><div class="st"><span>Defesas</span><b id="saves">0</b></div><div class="st"><span>Bolas restantes</span><b id="left">20</b></div></div><p class="hint">Os times chutam em turnos. Cada partida sorteia um novo roteiro de cantos, com bolas para a esquerda, o meio e a direita misturadas. O goleiro reage um instante depois do chute. O GER de cada time muda a pontaria dos atacantes e a força do goleiro e da defesa rival. Chutes podem ir para fora ou na trave, e empates viram pênaltis alternados.</p></div>
+  <div class="panel"><h3>Estatísticas</h3><div class="stats"><div class="st"><span>Chutes</span><b id="shots">0</b></div><div class="st"><span>Gols</span><b id="goals">0</b></div><div class="st"><span>Defesas</span><b id="saves">0</b></div><div class="st"><span>Bolas restantes</span><b id="left">20</b></div></div><p class="hint">Os times chutam em turnos. Cada partida sorteia um novo roteiro de cantos, com bolas para a esquerda, o meio e a direita misturadas. O goleiro reage um instante depois do chute. O GER de cada time muda a pontaria dos atacantes e a força do goleiro e da defesa rival. Chutes podem ir para fora ou na trave. Cada time chuta exatamente a quantidade de bolas escolhida; se quiser, ative os pênaltis alternados para desempatar.</p></div>
   <div class="panel"><h3>Lances</h3><div id="events"></div></div>
  </section>
-<section class="low2"><div class="panel"><h3>Artilharia</h3><div id="tops"></div><button class="sm" id="zero">Zerar artilharia</button></div><div class="panel"><h3>Gols da partida</h3><p class="hint">Autor e assistência de cada gol. Troque nos seletores para corrigir.</p><div id="gl"></div></div></section>
 </main>
 <script>
 (()=>{
@@ -184,19 +179,10 @@ const TEAMS=`0|Arsenal|ARS|#ef0107|85|84|86|85|Saka,Gyökeres,Eze,Martinelli,Ød
 5|Moreirense|MOR|#0b9444|68|68|68|69|Camisa 9,Camisa 10,Camisa 7,Camisa 11,Camisa 8
 5|Casa Pia|CPI|#aab4c4|68|68|67|68|Camisa 9,Camisa 10,Camisa 7,Camisa 11,Camisa 8`.split('\n').map(r=>{const[l,n,s,col,a,m,d,g,p]=r.split('|');return{l:+l,n,s,col,a:+a,m:+m,d:+d,g:+g,p:p.split(','),e:ELITE.includes(s),ger:Math.round(a*.3+m*.25+d*.25+g*.2)}});
 const R0=store.get('mf_rosters')||{};TEAMS.forEach(t=>{if(R0[t.s])t.p=R0[t.s]});
-let ALL=store.get('mf_goals')||[],MATCH=store.get('mf_match')||0,live=false,mvp='';
+let GL=[],mvp='',pens=false;
 const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function pickW(p,ex){const w=p.map((x,i)=>x===ex?0:Math.pow(.72,i)),t=w.reduce((a,b)=>a+b,0);let r=rnd()*t;for(let i=0;i<p.length;i++){r-=w[i];if(r<=0)return p[i]}return p[0]}
-function addGoal(b){ALL.push({m:MATCH,t:TEAMS.indexOf(tm(b.team)),s:b.shooter,a:b.assister,min:fmt(clock)});store.set('mf_goals',ALL);renderAll()}
-const opts=(list,sel,none)=>(none?'<option value="">Sem assistência</option>':'')+[...new Set(sel&&!list.includes(sel)?[...list,sel]:list)].map(x=>'<option'+(x===sel?' selected':'')+' value="'+esc(x)+'">'+esc(x)+'</option>').join('');
-function renderAll(){
- const mp={};const add=(t,n,k)=>{const q=t+'|'+n;(mp[q]=mp[q]||{t,n,g:0,a:0})[k]++};
- ALL.forEach(g=>{add(g.t,g.s,'g');if(g.a)add(g.t,g.a,'a')});
- const rows=Object.values(mp),row=(r,i,k)=>'<div class="tr"><span>'+(i+1)+'</span><span><u style="background:'+TEAMS[r.t].col+'"></u>'+esc(r.n)+' <small>'+TEAMS[r.t].s+'</small></span><b>'+r[k]+'</b></div>';
- const tg=rows.filter(r=>r.g).sort((x,y)=>y.g-x.g||y.a-x.a).slice(0,8),ta=rows.filter(r=>r.a).sort((x,y)=>y.a-x.a||y.g-x.g).slice(0,5);
- $('tops').innerHTML='<h4>Chuteira de ouro</h4>'+(tg.map((r,i)=>row(r,i,'g')).join('')||'<p class="hint">Nenhum gol ainda.</p>')+'<h4>Garçons</h4>'+(ta.map((r,i)=>row(r,i,'a')).join('')||'<p class="hint">Nenhuma assistência ainda.</p>');
- const gl=ALL.map((g,i)=>[g,i]).filter(x=>(live||ended)&&x[0].m===MATCH);
- $('gl').innerHTML=gl.map(([g,i])=>'<div class="gr"><time>'+g.min+'</time><u style="background:'+TEAMS[g.t].col+'"></u><select data-i="'+i+'" data-k="s" aria-label="Autor do gol">'+opts(TEAMS[g.t].p,g.s)+'</select><select data-i="'+i+'" data-k="a" aria-label="Assistência">'+opts(TEAMS[g.t].p,g.a,1)+'</select></div>').join('')||'<p class="hint">Os gols da partida aparecem aqui.</p>'}
+function addGoal(b){GL.push({s:b.shooter,a:b.assister})}
 const tm=i=>TEAMS[+$(i?'teamB':'teamA').value],teamName=i=>tm(i).n;
 const dist=(x,y)=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),u=p(x),v=p(y);return Math.hypot(u[0]-v[0],u[1]-v[1],u[2]-v[2])};
 const lum=h=>{const u=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));return u[0]*.3+u[1]*.6+u[2]*.1};
@@ -211,7 +197,7 @@ function setTeams(){const a=tm(0),b=tm(1);COL=[a.col,dist(a.col,b.col)<110?(dist
   $('name'+k).textContent=t.n;$('sub'+k).textContent=LG[t.l]+' · GER '+t.ger;
   for(const id of['flag','cr']){const e=$(id+k);e.textContent=t.s;e.style.background='radial-gradient(circle at 35% 30%,'+c+','+c+'aa)';e.style.color=txt}
   $('ger'+k).textContent=t.ger;$('pl'+k).value=t.p.join(', ');
-  $('bars'+k).innerHTML=[['Ataque',t.a],['Meio',t.m],['Defesa',t.d],['Goleiro',t.g]].map(x=>'<div class="br"><span>'+x[0]+'</span><i><u style="width:'+clamp((x[1]-60)/35*100,4,100)+'%"></u></i><b>'+x[1]+'</b></div>').join('')});renderAll()}
+  $('bars'+k).innerHTML=[['Ataque',t.a],['Meio',t.m],['Defesa',t.d],['Goleiro',t.g]].map(x=>'<div class="br"><span>'+x[0]+'</span><i><u style="width:'+clamp((x[1]-60)/35*100,4,100)+'%"></u></i><b>'+x[1]+'</b></div>').join('')})}
 function stats(){$('scoreA').textContent=score[0];$('scoreB').textContent=score[1];$('shots').textContent=shots;$('goals').textContent=goals;$('saves').textContent=saves;$('left').textContent=remaining}
 function bump(i){const e=$(i?'scoreB':'scoreA');e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}
 function log(k,t){const e=document.createElement('div');e.className='ev '+k;e.innerHTML='<i></i><span></span><time></time>';e.children[1].textContent=t;e.children[2].textContent=fmt(clock);$('events').prepend(e);while($('events').children.length>8)$('events').lastChild.remove()}
@@ -219,7 +205,7 @@ function makePlan(n){reseed();const lanes=[-1,-.5,0,.5,1],per=[[],[]];
  for(const s of[0,1]){while(per[s].length<n)per[s].push(...shuffle(lanes.slice()));per[s].length=n}
  return Array.from({length:n*2},(_,i)=>500+per[i%2][i>>1]*222+(rnd()-.5)*50)}
 function reset(){balls=[];parts=[];ripples=[];banner=null;keeper={x:500,tx:500,dive:0,dir:1,lean:0,react:.15,rt:9};
- total=+$('quantity').value*2;remaining=total;plan=null;extra=0;live=false;mvp='';score=[0,0];shots=goals=saves=0;playing=paused=ended=false;wait=.6;clock=0;
+ total=+$('quantity').value*2;remaining=total;plan=null;extra=0;GL=[];mvp='';score=[0,0];shots=goals=saves=0;playing=paused=ended=false;wait=.6;clock=0;
  $('events').innerHTML='';log('',  'Aguardando o apito inicial.');$('clock').textContent='00:00';msg('Pronto para o apito inicial');$('pause').textContent='❚❚ Pausar';setTeams();lock(false);stats()}
 function burst(x,y,col,n,sp,spark){for(let i=0;i<n;i++){const a=rnd()*6.283,v=sp*(.3+rnd()*.7);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-(spark?0:140),life:0,max:.6+rnd()*.7,col:spark?'#fff':[col,'#ffc83d','#fff'][i%3],s:2+rnd()*3.5})}}
 function launch(){if(!plan)plan=makePlan(total/2);
@@ -239,7 +225,7 @@ function resolve(b){b.x=b.tx;b.y=b.ty;b.p=1;b.age=0;const n=teamName(b.team);
  stats()}
 function game(dt){
  clock+=dt;wait-=dt;
- if(remaining>0&&clock<dur&&wait<=0&&!balls.some(b=>b.state==='fly'))launch();
+ if(remaining>0&&wait<=0&&!balls.some(b=>b.state==='fly'))launch();
  let fl=null;
  for(const b of balls){b.age+=dt;
   if(b.state==='fly'){fl=b;b.p=Math.min(1,b.p+dt/b.T);const p=b.p;
@@ -252,10 +238,10 @@ function game(dt){
  keeper.x+=(tgt-keeper.x)*(1-Math.exp(-dt*6));
  keeper.lean+=(clamp((keeper.x-old)/Math.max(dt,.001)*.0022,-.5,.5)-keeper.lean)*Math.min(1,dt*10);
  keeper.dive+=((fl&&fl.p>.55?1:0)-keeper.dive)*Math.min(1,dt*10);
- $('clock').textContent=fmt(Math.min(clock,dur));
- if(!ended&&remaining===0&&!balls.length&&score[0]===score[1]&&clock<dur&&extra<5){extra++;remaining=2;total+=2;plan.push(500+(rnd()-.5)*420,500+(rnd()-.5)*420);wait=1;log('','Empate! Pênaltis alternados.')}
- if(!ended&&((remaining===0&&!balls.length)||(clock>=dur&&!balls.some(b=>b.state==='fly')))){
-  ended=true;playing=false;lock(false);whistle();const[x,y]=score;{const q={};ALL.filter(g=>g.m===MATCH).forEach(g=>{q[g.s]=(q[g.s]||0)+3;if(g.a)q[g.a]=(q[g.a]||0)+1});const b=Object.entries(q).sort((u,v)=>v[1]-u[1])[0];mvp=b?b[0]:''}msg('Fim de jogo: '+x+' x '+y);log('end','Fim de jogo: '+teamName(0)+' '+x+' x '+y+' '+teamName(1))}}
+ $('clock').textContent=fmt(clock);
+ if(!ended&&pens&&remaining===0&&!balls.length&&score[0]===score[1]&&extra<5){extra++;remaining=2;total+=2;plan.push(500+(rnd()-.5)*420,500+(rnd()-.5)*420);wait=1;log('','Empate! Pênaltis alternados.')}
+ if(!ended&&remaining===0&&!balls.length){
+  ended=true;playing=false;lock(false);whistle();const[x,y]=score;{const q={};GL.forEach(g=>{q[g.s]=(q[g.s]||0)+3;if(g.a)q[g.a]=(q[g.a]||0)+1});const b=Object.entries(q).sort((u,v)=>v[1]-u[1])[0];mvp=b?b[0]:''}msg('Fim de jogo: '+x+' x '+y);log('end','Fim de jogo: '+teamName(0)+' '+x+' x '+y+' '+teamName(1))}}
 function fx(dt){shake*=Math.max(0,1-dt*6);for(const p of parts){p.life+=dt;p.vy+=520*dt;p.vx*=1-dt*1.5;p.x+=p.vx*dt;p.y+=p.vy*dt}parts=parts.filter(p=>p.life<p.max);
  for(const r of ripples)r.t+=dt;ripples=ripples.filter(r=>r.t<.9);if(banner){banner.t+=dt;if(banner.t>1.4)banner=null}}
 /* ---------- desenho ---------- */
@@ -313,16 +299,14 @@ function draw(){c.setTransform(dpr,0,0,dpr,0,0);if(shake>.3)c.translate((rnd()-.
 const bg=buildBG();
 let last=0;
 function loop(t){const dt=Math.min(.05,(t-(last||t))/1000);last=t;T+=dt;if(!paused){if(playing)game(dt);fx(dt)}draw();requestAnimationFrame(loop)}
-$('start').onclick=()=>{if(playing){if(paused)$('pause').click();return}if(ended||remaining===0)reset();if(!shots){MATCH++;store.set('mf_match',MATCH)}live=true;dur=+$('duration').value;cadence=clamp(dur/total,1.3,3.2);playing=true;wait=.5;msg('Bola rolando!');log('','Apito inicial. Bola rolando.');lock(true);whistle()};
+$('start').onclick=()=>{if(playing){if(paused)$('pause').click();return}if(ended||remaining===0)reset();dur=+$('duration').value;pens=$('tie').value==='1';cadence=clamp(dur/total,1.25,4);playing=true;wait=.5;msg('Bola rolando!');log('','Apito inicial. Bola rolando.');lock(true);whistle()};
 $('pause').onclick=()=>{if(!playing)return;paused=!paused;$('pause').textContent=paused?'▶ Retomar':'❚❚ Pausar';msg(paused?'Jogo pausado':'Bola rolando!')};
 $('reset').onclick=reset;
 ['quantity','level','duration'].forEach(id=>$(id).onchange=()=>{if(!playing)reset()});
 ['A','B'].forEach((k,n)=>{const ts=$('team'+k),pl=$('pl'+k),mk=l=>{const g=document.createElement('optgroup');g.label=l;ts.appendChild(g);return g};
  const el=mk('Elite 16'),og=LG.map(l=>mk('Outros · '+l));TEAMS.forEach((t,i)=>(t.e?el:og[t.l]).appendChild(new Option(t.n,i)));
- ts.value=TEAMS.findIndex(t=>t.s===(n?'ARS':'RMA'));ts.onchange=()=>{if(!playing)reset()};
+ ts.value=TEAMS.findIndex(t=>t.s===(n?'ARS':'RMA'));ts.onchange=()=>{if(playing)return;const o=$('team'+(n?'A':'B'));if(o.value===ts.value)o.value=(+ts.value+1)%TEAMS.length;reset()};
  pl.onchange=()=>{const t=tm(n);t.p=pl.value.split(',').map(x=>x.trim()).filter(Boolean);if(!t.p.length)t.p=['Camisa 9'];pl.value=t.p.join(', ');const o=store.get('mf_rosters')||{};o[t.s]=t.p;store.set('mf_rosters',o)}});
-$('gl').onchange=e=>{const el=e.target,g=ALL[+el.dataset.i];if(!g)return;g[el.dataset.k]=el.value;if(g.a===g.s)g.a='';store.set('mf_goals',ALL);renderAll();log('','Gol corrigido: '+g.s+(g.a?' (assistência de '+g.a+')':''))};
-let zt=0;$('zero').onclick=()=>{if(!zt){$('zero').textContent='Confirmar: zerar tudo';zt=setTimeout(()=>{zt=0;$('zero').textContent='Zerar artilharia'},3000);return}clearTimeout(zt);zt=0;ALL=[];store.set('mf_goals',ALL);$('zero').textContent='Zerar artilharia';renderAll()};
 $('mute').onclick=()=>{mute=!mute;$('mute').textContent=mute?'🔇':'🔊'};
 reset();requestAnimationFrame(loop);
 })();
